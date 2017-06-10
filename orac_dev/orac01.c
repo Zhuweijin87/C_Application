@@ -11,14 +11,6 @@ char	username[] = ""
 char	password[] = ""
 char	connstr[] = ""
 
-void PrintError(char *msg, OCIError *error)
-{
-	sb4     errCode;
-    char    errmsg[100] = {'\0'};
-    OCIErrorGet((dvoid *)error, (ub4)1, NULL, &errCode, (text *)errmsg, (ub4)sizeof(errmsg), OCI_HTYPE_ERROR);
-    fprintf(stderr, "%s %s\n", msg, errmsg);
-}
-
 int HandleSQL()
 {
 	int			ret;
@@ -43,7 +35,7 @@ int HandleSQL()
 
 HandleSQL_end:
 	if(error)
-        OCIHandleFree(error, OCI_HTYPE_ERROR);
+		OCIHandleFree(error, OCI_HTYPE_ERROR);
 }
 
 int main()
