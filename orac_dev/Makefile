@@ -1,6 +1,23 @@
 CC=gcc
+CFLAG=
+ORACLE_HOME=/u01/oracle/product/11g
+INC_PATH=$(ORACLE_HOME)/rdbms/public
+LIB_PATH=$(ORACLE_HOME)/lib
+RM=rm -f
+LIB_LINK=$(LIB_PATH) -lclntsh
 
-INC_PATH=/u01/oracle/product/11g/rdbms/public
-LIB_PATH=/u01/oracle/product/11g/lib
+SQL_OBJ=query.c
 
+TARGET=orac01
+
+all:$(TARGET)
+
+%.o:%.c
+	$(CC) $(CFLAG) -c $< -I$(INC_PATH)
+
+orac01:orac01.o $(SQL_OBJ)
+	$(CC) $(CFLAG) -o $@ orac01.o $(SQL_OBJ) -L$(LIB_LINK)
+
+clean:
+	$(RM) $(TARGET) *.o
 

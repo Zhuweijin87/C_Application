@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "oci.h"
 
 static OCIEnv		*env = NULL;
 static OCIAuthInfi	*auth = NULL;
