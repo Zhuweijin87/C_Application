@@ -9,7 +9,7 @@ typedef struct emp_s
 	int		mgr;
 	double	sal;
 	double	comm;
-	int		depno;
+	int		deptno;
 } Emp;
 
 #endif
