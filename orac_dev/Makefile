@@ -1,12 +1,12 @@
 CC=gcc
-CFLAG=
+CFLAG=-g
 ORACLE_HOME=/u01/oracle/product/11g
 INC_PATH=$(ORACLE_HOME)/rdbms/public
 LIB_PATH=$(ORACLE_HOME)/lib
 RM=rm -f
 LIB_LINK=$(LIB_PATH) -lclntsh
 
-SQL_OBJ=query.c
+SQL_OBJ=query.o
 
 TARGET=orac01
 

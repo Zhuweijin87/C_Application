@@ -1,16 +1,18 @@
 //
 #include <stdio.h>
 #include <string.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "oci.h"
 
+/* 环境句柄, 所有句柄的基础, 指向一块内存区, 
+ * 其他的句柄在该句柄的基础上进行别的句柄空间的分配和操作 */
 static OCIEnv		*env = NULL;
-static OCIAuthInfi	*auth = NULL;
+static OCIAuthInfo	*auth = NULL;
 
-char	username[] = ""
-char	password[] = ""
-char	connstr[] = ""
+char	username[] = "scott";
+char	password[] = "tiger";
+char	connstr[] = "";
 
 int HandleSQL()
 {
@@ -52,13 +54,13 @@ int main()
 	}
 
 	ret = OCIHandleAlloc(env, (dvoid **)&error, OCI_HTYPE_ERROR, 0, (void **)NULL);
-	if(ret != NULL)
+	if(ret != OCI_SUCCESS)
 	{
 		printf("OCIHandleAlloc OCI_HTYPE_ERROR error: %d\n");
 		goto end;
 	}
 
-	ret = OCIHandleAlloc(env, (dvoid **)*auth, OCI_HTYPE_ERROR, 0, (void **)NULL);
+	ret = OCIHandleAlloc(env, (dvoid **)&auth, OCI_HTYPE_ERROR, 0, (void **)NULL);
 	if(ret != OCI_SUCCESS)
 	{
 		printf("OCIHandleAlloc OCI_HTYPE_ERROR error: %d\n");

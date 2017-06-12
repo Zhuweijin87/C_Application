@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "oci.h"
+#include "emp.h"
 
 /* oracle 自带数据库 */
 char	select_sql[] = "select empno, ename from emp";
@@ -17,6 +19,7 @@ void PrintError(char *msg, OCIError *error)
 
 int query_fetch_by_one(OCISvcCtx *context, OCIError *error)
 {
+	int			ret;
 	OCIStmt		*stmt = NULL;
 	
 	ret = OCIStmtPrepare2(context, &stmt, error, (text *)select_sql, strlen(select_sql), NULL, 0, OCI_NTV_SYNTAX, OCI_DEFAULT);
@@ -27,9 +30,11 @@ int query_fetch_by_one(OCISvcCtx *context, OCIError *error)
 	}	
 
 	/* 绑定输入参数 */
+#if 0
 	OCIBind		*bind1 = NULL;
 	
 	OCIBindByName(stmt, &bind1, error, (text *)"", -1, (void *), sizeof(), SQLT_INT, NULL, NULL, NULL, 0, NULL, OCI_DEFAULT);
+#endif
 
 	//OCIBinfByName(stmt, &bind1, error, 0, 0, );
 	ret = OCIStmtExecute(context, stmt, error, 0, 0, (OCISnapshot *) NULL, (OCISnapshot *) NULL, OCI_DEFAULT);
@@ -40,10 +45,26 @@ int query_fetch_by_one(OCISvcCtx *context, OCIError *error)
 	}
 
 	/* 定义输出参数 */
-	OCIDefineByPos(stmt, &def1, error, 1, (void *)user.userid, sizeof(user.userid), SQLT_STR, NULL, NULL, NULL, OCI_DEFAULT);
+	OCIDefine	*def1 = NULL;
+	OCIDefine 	*def2 = NULL;
+	OCIDefine 	*def3 = NULL;
+	OCIDefine	*def4 = NULL;
+	OCIDefine	*def5 = NULL;
+	OCIDefine	*def6 = NULL;
+	OCIDefine	*def7 = NULL;
 
-	int		done = 0;
-	int		status = 0;
+	Emp		emp;
+
+	OCIDefineByPos(stmt, &def1, error, 1, (void *)&emp.empno, sizeof(emp.empno), SQLT_INT, NULL, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def2, error, 2, (void *)emp.ename, sizeof(emp.ename), SQLT_STR, NULL, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def3, error, 3, (void *)emp.job, sizeof(emp.job), SQLT_STR, NULL, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def4, error, 4, (void *)&emp.mgr, sizeof(emp.mgr), SQLT_INT, NULL, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def5, error, 5, (void *)&emp.sal, sizeof(emp.sal), SQLT_FLT, NULL, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def6, error, 6, (void *)&emp.comm, sizeof(emp.comm), SQLT_FLT, NULL, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def6, error, 7, (void *)&emp.depno, sizeof(emp.depno), SQLT_INT, NULL, NULL, NULL, OCI_DEFAULT);
+
+	int		done = 0, i;
+	int		status = 0, rows = 0;
 	while(!done)
 	{
 		status = OCIStmtFetch(stmt, error, 1, OCI_FETCH_NEXT, OCI_DEFAULT);
@@ -65,7 +86,8 @@ int query_fetch_by_one(OCISvcCtx *context, OCIError *error)
 			for(i = 0; i<rows; i++)
 			{
 				/* 打印查询数据 */
-				printf("");
+				printf("empno:%d, ename:%s, job:%s, mgr:%d, sal:%.2f, comm:%.2f, depno: %d\n", 
+					emp.empno, emp.ename, emp.job, emp.mgr, emp.sal, emp.comm, emp.depno);
 			}
 		}
 		else
@@ -104,7 +126,42 @@ int query_fetch_by_multi(OCISvcCtx *context, OCIError *error)
 	}
 
 	/* 输出参数定义 */
-	
+	#define ARRAY_SIZE      5
+
+    int         empno[ARRAY_SIZE];
+    char        ename[ARRAY_SIZE][11];
+    char        job[ARRAY_SIZE][10];
+    int         mgr[ARRAY_SIZE];
+    double      sal[ARRAY_SIZE];
+    double      comm[ARRAY_SIZE];
+	double  	depno[ARRAY_SIZE];
+
+    /* 指示器变量/指示器变量数组，如果此字段可能存在空值，则要指示器变量，否则单条处理时为NULL */
+    int         empno_ind[ARRAY_SIZE];
+    int         ename_ind[ARRAY_SIZE];
+    int         job_ind[ARRAY_SIZE];
+    int         mgr_ind[ARRAY_SIZE];
+    int         sal_ind[ARRAY_SIZE];
+    int         comm_ind[ARRAY_SIZE];
+	int			depno_ind[ARRAY_SIZE];
+
+    OCIDefine   *def1 = NULL;
+    OCIDefine   *def2 = NULL;
+    OCIDefine   *def3 = NULL;
+    OCIDefine   *def4 = NULL;
+    OCIDefine   *def5 = NULL;
+    OCIDefine   *def6 = NULL;
+	OCIDefine	*def7 = NULL;
+
+    /* 字符串 SQLT_STR | SQLT_CHR */
+    OCIDefineByPos(stmt, &def1, error, 1, (void *)&empno[0], (ub4)sizeof(empno[0]), SQLT_INT, (dvoid *)empno_ind, NULL, NULL, OCI_DEFAULT);
+    OCIDefineByPos(stmt, &def2, error, 2, (void *)ename[0], (ub4)sizeof(ename[0]), SQLT_STR, (dvoid *)ename_ind, NULL, NULL, OCI_DEFAULT);
+    OCIDefineByPos(stmt, &def3, error, 3, (void *)job[0], (ub4)sizeof(job[0]), SQLT_STR, (dvoid *)job_ind, NULL, NULL, OCI_DEFAULT);
+    OCIDefineByPos(stmt, &def4, error, 4, (void *)&mgr[0], (ub4)sizeof(mgr[0]), SQLT_INT, (dvoid *)mgr_ind, NULL, NULL, OCI_DEFAULT);
+    OCIDefineByPos(stmt, &def5, error, 5, (void *)&sal[0], (ub4)sizeof(sal[0]), SQLT_FLT, (dvoid *)sal_ind, NULL, NULL, OCI_DEFAULT);
+    OCIDefineByPos(stmt, &def6, error, 6, (void *)&comm[0], (ub4)sizeof(comm[0]), SQLT_FLT, (dvoid *)comm_ind, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def7, error, 7, (void *)&depno[0], (ub4)sizeof(depno[0]), SQLT_INT, (dvoid *)depno_ind, NULL, NULL, OCI_DEFAULT);
+		
 	int done = 1;
     int rows, i;
     while(done)
@@ -118,7 +175,7 @@ int query_fetch_by_multi(OCISvcCtx *context, OCIError *error)
             {
                 ret = OCIAttrGet(stmt, OCI_HTYPE_STMT, &rows, NULL, OCI_ATTR_ROWS_FETCHED, error);
                 if(ret != OCI_SUCCESS)
-                    printError("OCIAttrGet, ", error);
+                    PrintError("OCIAttrGet, ", error);
                 done = 0;
             }
             printf("fetch rows: %d\n", rows);
@@ -129,7 +186,7 @@ int query_fetch_by_multi(OCISvcCtx *context, OCIError *error)
 		}
 		else
         {
-            printError("OCIStmtFetch: ", error);
+            PrintError("OCIStmtFetch: ", error);
             done = 0;
         }
 	}
