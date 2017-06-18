@@ -10,6 +10,7 @@
 static OCIEnv		*env = NULL;
 static OCIAuthInfo	*auth = NULL;
 static OCISPool		*spool = NULL; /* 会话池 */	
+static OCICPool		*cpool = NULL; /* 连接池 */
 
 char	username[] = "scott";
 char	password[] = "tiger";
@@ -18,13 +19,16 @@ char	connstr[] = "";
 char	*spoolName = NULL;
 int		 spoolNameLen = 0;
 
+char 	*cpoolName = NULL;
+int		 cpoolNameLen = 0;
+
 #define	DEFAULT_SESSION		10
 
+/* 使用OCISessionGet获取登录数据库权限(推荐)*/
 int HandleSQL()
 {
-	int			ret;
+	int			ret, i;
 	OCIError	*error = NULL;
-	OCISvcCtx	*context = NULL;
 
 	ret = OCIHandleAlloc(env, (dvoid **)&error, OCI_HTYPE_ERROR, 0, (void **)NULL);
 	if(ret != OCI_SUCCESS)
@@ -33,25 +37,51 @@ int HandleSQL()
 		goto HandleSQL_end;	
 	}
 
-	/* 获取一个会话对象 */
-	ret = OCISessionGet(env, error, &context, auth, (text *)connstr, strlen(connstr), NULL, 0, NULL, NULL, NULL, OCI_DEFAULT);
-	if(ret != OCI_SUCCESS)
+	/* 获取一个会话对象: OCISessionGet 与 OCISessionRelease 两函数想匹配 */
+	for(i = 0; i<DEFAULT_SESSION; i++)
 	{
-		PrintError("OCISessionGet context error: ", error);
-		goto HandleSQL_end;
+		OCISvcCtx   *context = NULL;
+		printf("#### Use Session: %d #####\n", i);
+		ret = OCISessionGet(env, error, &context, auth, (text *)connstr, strlen(connstr), NULL, 0, NULL, NULL, NULL, OCI_DEFAULT);
+		if(ret != OCI_SUCCESS)
+		{
+			PrintError("OCISessionGet context error: ", error);
+			goto HandleSQL_end;
+		}
+
+		/* 开始SQL语句操作 */
+		query_fetch_by_one(context, error);
+
+		query_fetch_by_multi(context, error);
+
+		OCISessionRelease(context, error, NULL, 0, OCI_DEFAULT);
 	}
-
-	/* 开始SQL语句操作 */
-	query_fetch_by_one(context, error);
-
-	query_fetch_by_multi(context, error);
-
-	OCISessionRelease(context, error, NULL, 0, OCI_DEFAULT);
 
 HandleSQL_end:
 	if(error)
 		OCIHandleFree(error, OCI_HTYPE_ERROR);
 }
+
+#if 0
+/* 使用Login(不推荐) */
+int HandleSQL2()
+{
+	int		ret;
+	OCIError    *error = NULL;
+    OCISvcCtx   *context = NULL;
+    
+    ret = OCIHandleAlloc(env, (dvoid **)&error, OCI_HTYPE_ERROR, 0, (void **)NULL);
+    if(ret != OCI_SUCCESS)
+    {   
+        printf("OCIHandleAlloc OCI_HTYPE_ERROR error: %d\n", ret);
+        goto HandleSQL_end; 
+    }
+
+	ret = OCILogon2(env, error, &context, username, strlen(username), password, strlen(password), poolName, poolNameLen, OCI_LOGON2_CPOOL));
+
+	return 0;
+}
+#endif
 
 int SessionPoolCreate(OCIError *error)
 {
@@ -70,17 +100,43 @@ int SessionPoolCreate(OCIError *error)
     increment = 1;					 /*自增量*/
 
     /* 创建回话池 */
-    ret = OCISessionPoolCreate(env, error, spool, (text **)&poolName, &poolNameLen, (const text *)connstr, strlen(connstr),
+	/* OCI_SPC_HOMOGENEOUS: 所有session的用户密码被授权登录 */
+    ret = OCISessionPoolCreate(env, error, spool, (text **)&spoolName, &spoolNameLen, (const text *)connstr, strlen(connstr),
                                 min, max, increment, (text *)username, strlen(username), (text *)password, strlen(password), OCI_SPC_HOMOGENEOUS);
     if(ret != OCI_SUCCESS)
     {
-        printError("OCISessionPoolCreate: ", error);
+        PrintError("OCISessionPoolCreate: ", error);
         return -1;
     }
 
-    printf("PoolName: %s, PoolNameLen:%d, connstr:%s\n", poolName, poolNameLen, connstr);
+    printf("PoolName: %s, PoolNameLen:%d, connstr:%s\n", spoolName, spoolNameLen, connstr);
 
     return 0;
+}
+
+int ConnectPoolCreate(OCIError *error)
+{
+	int			ret;
+	ub4         min, max, increment;
+
+	ret = OCIHandleAlloc(env, (dvoid **)&cpool, OCI_HTYPE_CPOOL, 0, (void **)NULL);
+	if(ret != OCI_SUCCESS)
+	{
+		printf("OCIHandleAlloc OCI_HTYPE_CPOOL fail\n");
+		return -1;
+	}
+
+	ret = OCIConnectionPoolCreate(env, error, cpool, (text **)&cpoolName, &cpoolNameLen,(text *)connstr, strlen(connstr),
+                   					min, max, increment, (text *)username, strlen(username), (text *)password, strlen(password), OCI_SPC_HOMOGENEOUS );
+	if(ret != OCI_SUCCESS)
+	{
+		PrintError("OCIConnectionPoolCreate: ", error);
+		return -1;
+	}
+
+	printf("PoolName: %s, PoolNameLen:%d, connstr:%s\n", spoolName, spoolNameLen, connstr);
+
+	return 0;
 }
 
 int main()
@@ -135,6 +191,9 @@ int main()
 
 	/* 开始处理SQL语句 */
 	HandleSQL();	
+
+	/* 销毁会话池 */
+	OCISessionPoolDestroy(spool, error, OCI_DEFAULT);
 	
 end:
 	/* 释放资源 */

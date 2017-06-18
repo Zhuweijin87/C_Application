@@ -53,22 +53,30 @@ int query_fetch_by_one(OCISvcCtx *context, OCIError *error)
 	OCIDefine	*def6 = NULL;
 	OCIDefine	*def7 = NULL;
 
+	int         empno_ind;
+    int         ename_ind;
+    int         job_ind;
+    int         mgr_ind;
+    int         sal_ind;
+    int         comm_ind;
+    int         deptno_ind;
+
 	Emp		emp;
 
-	OCIDefineByPos(stmt, &def1, error, 1, (void *)&emp.empno, sizeof(emp.empno), SQLT_INT, NULL, NULL, NULL, OCI_DEFAULT);
-	OCIDefineByPos(stmt, &def2, error, 2, (void *)emp.ename, sizeof(emp.ename), SQLT_STR, NULL, NULL, NULL, OCI_DEFAULT);
-	OCIDefineByPos(stmt, &def3, error, 3, (void *)emp.job, sizeof(emp.job), SQLT_STR, NULL, NULL, NULL, OCI_DEFAULT);
-	OCIDefineByPos(stmt, &def4, error, 4, (void *)&emp.mgr, sizeof(emp.mgr), SQLT_INT, NULL, NULL, NULL, OCI_DEFAULT);
-	OCIDefineByPos(stmt, &def5, error, 5, (void *)&emp.sal, sizeof(emp.sal), SQLT_FLT, NULL, NULL, NULL, OCI_DEFAULT);
-	OCIDefineByPos(stmt, &def6, error, 6, (void *)&emp.comm, sizeof(emp.comm), SQLT_FLT, NULL, NULL, NULL, OCI_DEFAULT);
-	OCIDefineByPos(stmt, &def6, error, 7, (void *)&emp.deptno, sizeof(emp.deptno), SQLT_INT, NULL, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def1, error, 1, (void *)&emp.empno, sizeof(emp.empno), SQLT_INT, (dvoid *)&empno_ind, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def2, error, 2, (void *)emp.ename, sizeof(emp.ename), SQLT_STR, (dvoid *)&ename_ind, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def3, error, 3, (void *)emp.job, sizeof(emp.job), SQLT_STR, (dvoid *)&job_ind, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def4, error, 4, (void *)&emp.mgr, sizeof(emp.mgr), SQLT_INT, (dvoid *)&mgr_ind, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def5, error, 5, (void *)&emp.sal, sizeof(emp.sal), SQLT_FLT, (dvoid *)&sal_ind, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def6, error, 6, (void *)&emp.comm, sizeof(emp.comm), SQLT_FLT, (dvoid *)&comm_ind, NULL, NULL, OCI_DEFAULT);
+	OCIDefineByPos(stmt, &def6, error, 7, (void *)&emp.deptno, sizeof(emp.deptno), SQLT_INT, (dvoid *)&deptno_ind, NULL, NULL, OCI_DEFAULT);
 
 	int		done = 0, i;
 	int		status = 0, rows = 0;
 	while(!done)
 	{
 		status = OCIStmtFetch(stmt, error, 1, OCI_FETCH_NEXT, OCI_DEFAULT);
-		if(status != OCI_SUCCESS && status != OCI_NO_DATA)
+		if(status == OCI_SUCCESS || status == OCI_NO_DATA)
 		{
 			if(status == OCI_SUCCESS )	
 			{
@@ -92,6 +100,7 @@ int query_fetch_by_one(OCISvcCtx *context, OCIError *error)
 		}
 		else
 		{
+			printf("Error: %d\n", status);
 			PrintError("Fetch stmt fail, ", error);
 			done = 1;
 		}

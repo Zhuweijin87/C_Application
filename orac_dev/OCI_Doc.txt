@@ -1,0 +1,2 @@
+ORA-01405: fetched column value is NULL
+

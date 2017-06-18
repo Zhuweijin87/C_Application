@@ -8,7 +8,7 @@ LIB_LINK=$(LIB_PATH) -lclntsh
 
 SQL_OBJ=query.o
 
-TARGET=orac01
+TARGET=orac01 orac02
 
 all:$(TARGET)
 
@@ -17,6 +17,9 @@ all:$(TARGET)
 
 orac01:orac01.o $(SQL_OBJ)
 	$(CC) $(CFLAG) -o $@ orac01.o $(SQL_OBJ) -L$(LIB_LINK)
+
+orac02:orac02.o $(SQL_OBJ)
+	$(CC) $(CFLAG) -o $@ orac02.o $(SQL_OBJ) -L$(LIB_LINK)
 
 clean:
 	$(RM) $(TARGET) *.o
