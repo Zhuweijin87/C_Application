@@ -13,9 +13,9 @@ typedef struct hashnode_s
 
 typedef struct hashtable_s
 {
-    int         bucketnum;
-    int         bucketsize;
-    int         incrementor;
+    int         number;
+    int         nodeSize;
+    int         incr;
     char       *memory;
     hashnode_t **buckets;
 } hashtable_t;

@@ -9,11 +9,12 @@ int hashCode(const char *key, int len)
     return hashkey;
 }
 
-int hashtable_create(hashtable_t *hashtable, int bucket_num, int bucket_size)
+hashtable_t *hashtable_create(hashtable_t *hashtable, int bucket_num, int bucket_size)
 {
-    hashtable->bucketnum = bucket_num;
+	hashtable_t *hashtable = malloc(sizeof(hashtable_t));
+    hashtable->number = bucket_num;
     hashtable->bucketsize = bucket_size + sizeof(hashnode_t);
-    hashtable->incrementor = 10;
+    hashtable->incr = 10;
     hashtable->memory = calloc(bucket_num, hashtable->bucketsize);
     hashtable->buckets = calloc(bucket_num, sizeof(hashnode_t *));
 
@@ -29,3 +30,30 @@ int hashtable_clean(hashtable_t *hashtable)
 {
     
 }
+
+static hashnode_t *hashnode_create(char *key, char *value)
+{
+	hashnode_t *node = malloc(sizeof(hashnode_t));
+	memcpy(node->key, key, strlen(key));
+	node->value = value;	
+	return node;
+}
+
+int hashtable_addstring(hashtable_t *htable, char *key, char *valstring)
+{
+	return 0;
+}
+
+int hashtable_addnumber(hashtable_t *htable, char *key, double valdouble)
+{
+	return 0;
+}
+
+int hashtable_del(hashnode_t *htable, char *key)
+{
+	return 0;
+}
+
+
+
+
