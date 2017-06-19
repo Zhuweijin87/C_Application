@@ -133,6 +133,16 @@ int SessionPoolCreate(OCIError *error)
         return -1;
     }
 
+	/* 官网解释: set the statement cache size for all sessions in the pool */
+    /* Make sure that you enable result-set caching on the server too */
+    ub4         stmtCacheSize = 20;
+    ret = OCIAttrSet(spool, OCI_HTYPE_SPOOL, &stmtCacheSize, 0, OCI_ATTR_SPOOL_STMTCACHESIZE, error);
+    if(ret)
+    {   
+        PrintError("OCIAttrSet OCI_ATTR_SPOOL_STMTCACHESIZE fail:", error);
+        return -1;
+    }
+
     min = DEFAULT_SESSION;           /*最小会话池数量 */
     max = min + 3;           		 /*最大会话池数量*/
     increment = 1;					 /*自增量*/
@@ -153,7 +163,7 @@ int SessionPoolCreate(OCIError *error)
 								strlen(username), 
 								(text *)password, 
 								strlen(password), 
-								OCI_SPC_HOMOGENEOUS);
+								OCI_SPC_HOMOGENEOUS | OCI_SPC_STMTCACHE ); /* OCI_SPC_STMTCACHE: 开启缓存, 可以有更好的性能 */
     if(ret != OCI_SUCCESS)
     {
         PrintError("OCISessionPoolCreate: ", error);
@@ -192,7 +202,7 @@ int ConnectPoolCreate(OCIError *error)
 									strlen(username), 
 									(text *)password, 
 									strlen(password), 
-									OCI_SPC_HOMOGENEOUS );
+									OCI_SPC_HOMOGENEOUS | OCI_SPC_STMTCACHE);
 	if(ret != OCI_SUCCESS)
 	{
 		PrintError("OCIConnectionPoolCreate: ", error);

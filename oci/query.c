@@ -162,7 +162,7 @@ int query_fetch_by_multi(OCISvcCtx *context, OCIError *error)
     OCIDefine   *def6 = NULL;
 	OCIDefine	*def7 = NULL;
 
-    /* 字符串 SQLT_STR | SQLT_CHR */
+    /* 字符串 SQLT_STR或SQLT_CHR 整型:SQLT_INT, 浮点: SQLT_FLD */
     OCIDefineByPos(stmt, &def1, error, 1, (void *)&empno[0], (ub4)sizeof(empno[0]), SQLT_INT, (dvoid *)empno_ind, NULL, NULL, OCI_DEFAULT);
     OCIDefineByPos(stmt, &def2, error, 2, (void *)ename[0], (ub4)sizeof(ename[0]), SQLT_STR, (dvoid *)ename_ind, NULL, NULL, OCI_DEFAULT);
     OCIDefineByPos(stmt, &def3, error, 3, (void *)job[0], (ub4)sizeof(job[0]), SQLT_STR, (dvoid *)job_ind, NULL, NULL, OCI_DEFAULT);
@@ -239,7 +239,8 @@ int update(OCISvcCtx *context, OCIError *error)
         printf("update success\n");
     }
 
-    OCIStmtRelease(stmt, error, NULL, 0, OCI_DEFAULT);	
+    OCIStmtRelease(stmt, error, NULL, 0, OCI_DEFAULT);
+	
 	return 0;
 }
 
