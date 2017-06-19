@@ -66,10 +66,21 @@ int socket_select(int listenfd)
 			continue;
 		}
 
-		
+		for(i=0; i<numOfCli; i++)
+		{
+			if(readfds[i].fd == listenfd)
+			{
+				/* handle accept*/
+			}
+		}		
 	}
 
 	return 0;
+}
+
+int handle_accpet()
+{
+
 }
 
 int main(int args, char *argv[])
