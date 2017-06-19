@@ -12,9 +12,9 @@ static OCIAuthInfo	*auth = NULL;
 static OCISPool		*spool = NULL; /* 会话池 */	
 static OCICPool		*cpool = NULL; /* 连接池 */
 
-char	username[] = "scott";
-char	password[] = "tiger";
-char	connstr[] = "";
+char	username[] = "scott";	 /* 用户名 */
+char	password[] = "tiger";	 /* 用户密码 */
+char	connstr[] = "";			 /* 服务名称: 192.168.1.46/orcl */
 
 char	*spoolName = NULL;
 int		 spoolNameLen = 0;
@@ -77,7 +77,15 @@ int HandleSQL2()
         goto HandleSQL_end; 
     }
 
-	ret = OCILogon2(env, error, &context, username, strlen(username), password, strlen(password), poolName, poolNameLen, OCI_LOGON2_CPOOL));
+	ret = OCILogon2(env, error, &context, username, strlen(username), password, strlen(password), poolName, 
+			poolNameLen, OCI_LOGON2_CPOOL));
+	if(ret)
+	{
+		PrintError("LogOn Database error: ", error);
+		return -1;
+	}
+
+	OCILogoff();
 
 	return 0;
 }
@@ -102,7 +110,8 @@ int SessionPoolCreate(OCIError *error)
     /* 创建回话池 */
 	/* OCI_SPC_HOMOGENEOUS: 所有session的用户密码被授权登录 */
     ret = OCISessionPoolCreate(env, error, spool, (text **)&spoolName, &spoolNameLen, (const text *)connstr, strlen(connstr),
-                                min, max, increment, (text *)username, strlen(username), (text *)password, strlen(password), OCI_SPC_HOMOGENEOUS);
+                                min, max, increment, (text *)username, strlen(username), (text *)password, strlen(password), 
+								OCI_SPC_HOMOGENEOUS);
     if(ret != OCI_SUCCESS)
     {
         PrintError("OCISessionPoolCreate: ", error);
@@ -127,7 +136,8 @@ int ConnectPoolCreate(OCIError *error)
 	}
 
 	ret = OCIConnectionPoolCreate(env, error, cpool, (text **)&cpoolName, &cpoolNameLen,(text *)connstr, strlen(connstr),
-                   					min, max, increment, (text *)username, strlen(username), (text *)password, strlen(password), OCI_SPC_HOMOGENEOUS );
+                   					min, max, increment, (text *)username, strlen(username), (text *)password, strlen(password), 
+									OCI_SPC_HOMOGENEOUS );
 	if(ret != OCI_SUCCESS)
 	{
 		PrintError("OCIConnectionPoolCreate: ", error);
