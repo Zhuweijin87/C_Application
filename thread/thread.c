@@ -9,7 +9,7 @@ pthread_cond_t		lessGoods;
 /* 生产 */
 void *producer(void)
 {
-
+	
 }
 
 /* 消费 */
