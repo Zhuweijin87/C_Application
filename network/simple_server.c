@@ -57,3 +57,35 @@ int set_socket_noblock(int sockfd)
 	
 }
 
+int main(int args, char *argv[])
+{
+	int		ret;
+	int 	sockfd;
+
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(sockfd == -1)
+	{
+		fprintf(stderr, "fail to socket: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+	server.sin_addr_s_addr = inet_addr(host);
+
+	ret = bind(sockfd, (struct sockaddr *)&server, sizeof(server));
+	if(ret == -1)
+	{
+		fprintf(stderr, "fail to bind: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	ret = listen(sockfd, 20);
+	if(ret == -1)
+	{
+		fprintf(stderr, "fail to listen: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	exit(0);
+}

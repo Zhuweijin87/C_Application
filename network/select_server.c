@@ -54,8 +54,13 @@ int socket_select(int listenfd)
 	fd_set			readfds, allfds;
 	struct timeval	tv;
 
+	int i;
+	for(i=0; i<MAX_CLIENTS; i++)
+		fdsets[i] = -1;
+
 	FD_ZERO(&allfds);
 	FD_SET(listenfd, &allfds);
+	maxfd = listenfd;
 	
 	for ( ; ; )
 	{
@@ -89,12 +94,13 @@ int socket_select(int listenfd)
 	return 0;
 }
 
-int handle_accpet(int listenfd, int *fdsets, fd_set *readfds, fd_set *allfds)
+/* 处理客户端连接 */
+int handle_accpet(int listenfd, int *maxfd, int *fdsets, fd_set *readfds, fd_set *allfds)
 {
 	int		clifd;
 	struct sockaddr_in client;
 	socklen_t	clientlen;
-	
+
 	clientlen = sizeof(struct sockaddr_in);
 	clifd = accept(listenfd, (struct sockaddr *)&client, &clientlen);
 	if(clifd == -1)
@@ -128,14 +134,16 @@ int handle_read(int numOfCli, int *fdsets, fd_set *allfds)
 			if(len == -1)
 			{
 				fprintf(stderr, "recv error:%s\n", strerror(errno));
-				FD_CLR(fdset[i], allfds);
-				fdset[i] = -1;
+				close(fdsets[i]);
+				FD_CLR(fdsets[i], allfds);
+				fdsets[i] = -1;
 			}
 			else if(len == 0)
 			{
 				fprintf(stderr, "client[%d] closed\n", fdset[i]);
-				FD_CLR(fdset[i], allfds);
-				fdset[i] = -1;
+				close(fdsets[i]);
+				FD_CLR(fdsets[i], allfds);
+				fdsets[i] = -1;
 			}
 			else
 			{
@@ -148,7 +156,7 @@ int handle_read(int numOfCli, int *fdsets, fd_set *allfds)
 
 int main(int args, char *argv[])
 {
-
+	
 	return 0;
 }
 
