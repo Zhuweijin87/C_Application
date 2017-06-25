@@ -244,3 +244,10 @@ int update(OCISvcCtx *context, OCIError *error)
 	return 0;
 }
 
+/* 插入数据 */
+int insert(OCISvcCtx *context, OCIError *error)
+{
+	int		ret;
+
+}
+
