@@ -1,5 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
 
 /* 设置服务端连接属性 */
 int set_socket_opt(int sockfd)
@@ -53,14 +60,86 @@ int set_socket_opt(int sockfd)
 /* 设置非阻塞 */
 int set_socket_noblock(int sockfd)
 {
-	fcntl(sockfd, F_GETFD);
 	
+	return 0;
+}
+
+/* 客户端读写 */
+int handle_client_io(int clifd)
+{
+	int		n;
+	char	buffer[512] = {'\0'};
+	
+	n = read(clifd, buffer, 512);
+	if(n == -1)
+	{
+
+	}
+	else if(n == 0)
+	{
+		fprintf(stderr, "client disconnect\n");
+		close(clifd);
+		return 0;
+	}
+	else
+	{
+		fprintf(stderr, "recv: %s\n", buffer);
+	}
+
+	return 0;
+}
+
+/* 处理链接请求 */
+int handle_connection(int sockfd)
+{
+	int		clifd, quit = 0;
+	struct	sockaddr_in 	client;
+	socklen_t	clitlen;
+
+	for(; quit != 1; )
+	{
+		memset(&client, 0, sizeof(client));
+		clitlen = sizeof(client);
+		clifd = accept(sockfd, (struct sockaddr *)&client, &clitlen);
+		if(clifd == -1)
+		{
+			if(errno == EAGAIN)
+			{
+				continue;
+			}
+			fprintf(stderr, "accept fail: %s\n", strerror(errno));
+			return -1;
+		}
+		
+		handle_client_io(clifd);
+	}
 }
 
 int main(int args, char *argv[])
 {
 	int		ret;
 	int 	sockfd;
+	char	ch;
+	char	*host = "192.168.1.46";
+	int		port = 8010;
+	struct sockaddr_in	server;
+
+	while( (ch = getopt(args, argv, "s:p:")) != -1)
+	{
+		switch(ch)
+		{
+		case 's':
+			host = optarg;
+			break;
+		case 'p':
+			port = atoi(optarg);
+			break;
+		default:
+			break;
+		}
+	}
+
+	printf("Host:%s, Port:%d\n", host, port);
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if(sockfd == -1)
@@ -71,7 +150,7 @@ int main(int args, char *argv[])
 
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
-	server.sin_addr_s_addr = inet_addr(host);
+	server.sin_addr.s_addr = inet_addr(host);
 
 	ret = bind(sockfd, (struct sockaddr *)&server, sizeof(server));
 	if(ret == -1)
