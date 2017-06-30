@@ -5,14 +5,23 @@ LIB_HOME=
 
 RM=rm -f 
 
-TARGET=simpleserver
+TARGET=simpleServer simpleClient GetHostInfo selectServer
 
 all:$(TARGET)
 
 %.o:%.c
 	$(CC) $(CFLAG) -c $<
 
-simpleserver:simple_server.o
+simpleServer:simple_server.o
+	$(CC) $(CFLAG) -o $@ $?
+
+simpleClient:simple_client.o
+	$(CC) $(CFLAG) -o $@ $?
+
+selectServer:select_server.o
+	$(CC) $(CFLAG) -o $@ $?
+
+GetHostInfo:gethostinfo.o
 	$(CC) $(CFLAG) -o $@ $?
 
 clean:

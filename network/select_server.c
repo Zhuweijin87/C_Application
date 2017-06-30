@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <unistd.h>
 
 #define LISTEN_Q_MAX	20
 #define MAX_CLIENTS		1024
@@ -47,10 +48,11 @@ int socket_listen(char *host, int port)
 	return listenfd;
 }
 
-int socket_select(int listenfd)
+int handle_select(int listenfd)
 {
 	int				maxfd;
 	int				fdsets[MAX_CLIENTS];
+	int				numOfCli;
 	fd_set			readfds, allfds;
 	struct timeval	tv;
 
@@ -65,6 +67,7 @@ int socket_select(int listenfd)
 	for ( ; ; )
 	{
 		readfds = allfds;
+		/* 设置扫描时间 */
 		tv.tv_sec = 10;
 		tv.tv_usec = 0;
 		numOfCli = select(maxfd, &readfds, NULL, NULL, &tv);
@@ -81,23 +84,21 @@ int socket_select(int listenfd)
 
 		if(FD_ISSET(listenfd, &readfds))
 		{
-			/* handle Accept */
-			handle_accpet();
+			/* 处理客户端连接 */
+			handle_accept(listenfd, &maxfd, fdsets, &allfds);
 		}
-		else
-		{
-			/* handle Read/Write */
-			handle_recv();
-		}	
+		
+		/* 处理数据读写 */
+		handle_client(numOfCli, &maxfd, fdsets, &readfds, &allfds);
 	}
 
 	return 0;
 }
 
 /* 处理客户端连接 */
-int handle_accpet(int listenfd, int *maxfd, int *fdsets, fd_set *readfds, fd_set *allfds)
+int handle_accept(int listenfd, int *maxfd, int *fdsets, fd_set *allfds)
 {
-	int		clifd;
+	int		i, clifd;
 	struct sockaddr_in client;
 	socklen_t	clientlen;
 
@@ -108,7 +109,7 @@ int handle_accpet(int listenfd, int *maxfd, int *fdsets, fd_set *readfds, fd_set
 		return -1;
 	}
 
-	for(i=0; i<MAX_CLIENTS; i++)
+	for(i=0; i<(*maxfd); i++)
 	{
 		if(fdsets[i] == -1)
 		{
@@ -117,20 +118,25 @@ int handle_accpet(int listenfd, int *maxfd, int *fdsets, fd_set *readfds, fd_set
 		}
 	}
 
+	printf("New Client Connect\n");
+
+	*maxfd == (*maxfd) > clifd ? (*maxfd) : clifd;
+
 	return 0;
 }
 
-int handle_read(int numOfCli, int *fdsets, fd_set *allfds)
+int handle_client(int numOfCli, int *maxfd, int *fdsets, fd_set *readfds, fd_set *allfds)
 {
 	int 	len, i;
 	char	buf[1028] = {'\0'};
+	int		maxCount = *maxfd;
 
-	for(i=0; i<numOfCli; i++)
+	for(i=0; i<maxCount; i++)
 	{
-		if(FD_ISSET(fdset[i], allfds))
+		if(FD_ISSET(fdsets[i], readfds))
 		{
 			memset(buf, 0, sizeof(buf));
-			len = read(fdset[i], buf, 1024);
+			len = read(fdsets[i], buf, 1024);
 			if(len == -1)
 			{
 				fprintf(stderr, "recv error:%s\n", strerror(errno));
@@ -140,7 +146,7 @@ int handle_read(int numOfCli, int *fdsets, fd_set *allfds)
 			}
 			else if(len == 0)
 			{
-				fprintf(stderr, "client[%d] closed\n", fdset[i]);
+				fprintf(stderr, "client[%d] closed\n", fdsets[i]);
 				close(fdsets[i]);
 				FD_CLR(fdsets[i], allfds);
 				fdsets[i] = -1;
@@ -151,12 +157,39 @@ int handle_read(int numOfCli, int *fdsets, fd_set *allfds)
 			}
 		}
 	}
+
 	return 0;
 }
 
 int main(int args, char *argv[])
 {
-	
+	char	*host = "192.168.1.46";
+	int		 port = 8001;
+	char	 ch;
+
+	while( (ch = getopt(args, argv, "s:p:")) != -1)
+    {
+        switch(ch)
+        {
+        case 's':
+            host = optarg;
+            break;
+        case 'p':
+            port = atoi(optarg);
+            break;
+        default:
+            break;
+        }
+    }
+
+    printf("Host:%s, Port:%d\n", host, port);
+
+	int sockfd = socket_listen(host, port);	
+	if(sockfd < 0)
+		return -1;
+
+	handle_select(sockfd);
+
 	return 0;
 }
 
