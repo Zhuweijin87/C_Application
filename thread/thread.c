@@ -40,6 +40,9 @@ int main()
 
 	pthread_create(&thread[0], NULL, producer, NULL);
 	pthread_Create(&thread[1], NULL, consumer, NULL);	
-	
+
+	pthread_join(thread[0], NULL);
+	pthread_join(thread[1], NULL);
+
 	return 0;
 }
