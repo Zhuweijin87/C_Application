@@ -70,7 +70,7 @@ int handle_select(int listenfd)
 		/* 设置扫描时间 */
 		tv.tv_sec = 10;
 		tv.tv_usec = 0;
-		numOfCli = select(maxfd, &readfds, NULL, NULL, &tv);
+		numOfCli = select(maxfd+1, &readfds, NULL, NULL, &tv);
 		if(numOfCli == -1)
 		{
 			fprintf(stderr, "select error: %s\n", strerror(errno));
