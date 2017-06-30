@@ -1,48 +1,48 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include <time.h>
 
-pthread_mutex_t		lock;
-pthread_cond_t		lessMoney;
-pthread_cond_t		lessGoods;
-
-/* 生产 */
-void *producer(void)
+void *producer(void *arg)
 {
-	
+	int i;
+	for(i=0; i<10; i++)
+		printf("I am producer\n");
 }
 
-/* 消费 */
-void *consumer(void)
+void *consumer(void *arg)
 {
-
+	int i;
+	for(i=0; i<10; i++)
+		printf("I am consumer\n");
 }
 
+void *_thread_exit()
+{
+	printf("exit\n");
+}
 
 int main()
 {
 	int 		ret;
-	pthread_t	threads[4];
+	void 		*res;
+	pthread_t	threads[2];
 
-	ret = pthread_mutex_init(&lock, NULL);
+	pthread_create(&threads[0], NULL, producer, NULL);
+	pthread_create(&threads[1], NULL, consumer, NULL);	
+
+	ret = pthread_join(threads[0], NULL);
 	if(ret)
-	{
-		printf("");
-		exit(1);
-	}
-	
-	ret = pthread_cond_init(&lessMoney, NULL);
+		printf("pthread_join fail\n");
+	else
+		printf("pthread_join ok\n");
+
+	ret = pthread_join(threads[1], NULL);
 	if(ret)
-	{
-		printf("");
-		exit(1);
-	}
-
-	pthread_create(&thread[0], NULL, producer, NULL);
-	pthread_Create(&thread[1], NULL, consumer, NULL);	
-
-	pthread_join(thread[0], NULL);
-	pthread_join(thread[1], NULL);
+		 printf("pthread_join fail\n");
+    else
+        printf("pthread_join ok\n");
+	//sleep(2);
 
 	return 0;
 }
