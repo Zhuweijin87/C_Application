@@ -68,6 +68,9 @@ void *test1(void *arg)
 		printf("test1 ...\n");
 		usleep(200 * 1000);
 	}
+
+	char ret[] = "test1 is reurned";
+	return (void **)&ret;
 }
 
 void *test2(void *arg)
@@ -78,6 +81,9 @@ void *test2(void *arg)
 		printf("test2 ...\n");
 		usleep(300 * 1000);
 	}
+
+	char ret[] = "test2 is reurned";
+	return (void **)&ret;
 }
 
 int main()
@@ -89,5 +95,9 @@ int main()
 	ThreadRun(&thread, &test1, NULL);
 	ThreadRun(&thread, &test2, NULL);
 
-	ThreadWait(&thread);
+	//ThreadWait(&thread);
+	pthread_join(thread.threads[0].thread, NULL);
+	pthread_join(thread.threads[1].thread, NULL);
+
+	return 0;
 }
