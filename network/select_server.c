@@ -70,6 +70,7 @@ int handle_select(int listenfd)
 		/* 设置扫描时间 */
 		tv.tv_sec = 10;
 		tv.tv_usec = 0;
+		
 		numOfCli = select(maxfd+1, &readfds, NULL, NULL, &tv);
 		if(numOfCli == -1)
 		{
@@ -120,7 +121,7 @@ int handle_accept(int listenfd, int *maxfd, int *fdsets, fd_set *allfds)
 
 	printf("New Client Connect\n");
 
-	*maxfd == (*maxfd) > clifd ? (*maxfd) : clifd;
+	(*maxfd) = (*maxfd) > clifd ? (*maxfd) : clifd;
 
 	return 0;
 }
