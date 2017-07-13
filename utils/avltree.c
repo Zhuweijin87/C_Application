@@ -68,15 +68,6 @@ AVLtree_t *RR_Rotate(AVLtree_t *k)
 	return kRight;
 }
 
-/*       K3
- *      /  \  
- *     K2   a
- *    /  \
- *   b    K1
- *       / \
- *      d   e
- *           \f
- *           */
 AVLtree_t *LR_Rotate(AVLtree_t *k)
 {
 	//printf("LR_Rotate\n");

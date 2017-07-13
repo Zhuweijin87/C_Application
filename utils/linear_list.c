@@ -69,6 +69,16 @@ void list_clean(list_t *list)
 }
 
 //test
+
+void list_iter_print(list_t *list)
+{
+	int i;
+	int size = list_size(list);
+	for(i=0; i<size; i++)
+		printf("%d, ", list_peek(list, i));
+	printf("\n");
+}
+
 int main()
 {
 	list_t	*list = list_new(10);
@@ -78,14 +88,15 @@ int main()
 	list_add(list, 3);
 	list_add(list, 5);
 	list_add(list, 7);
-	int i;
-	int size = list_size(list);
-	for(i=0; i<size; i++)
-	{
-		printf("%d\n", list_get(list));
-	}
 
-	printf("list is empty: %d\n", is_empty(list));
+	list_iter_print(list);
+
+	printf("list is empty: %s\n", is_empty(list) == 1 ? "YES": "NO");
+	printf("list is full: %s\n", is_full(list) == 1 ? "YES" : "NO");	
 	
+	printf("list get : %d\n", list_get(list));
+	list_iter_print(list);
+	list_clean(list);
+	list_iter_print(list);
 	return 0;
 }
