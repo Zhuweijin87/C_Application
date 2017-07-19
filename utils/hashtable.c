@@ -4,26 +4,24 @@
 
 int hashCode(const char *key, int len)
 {
-    unsigned int  hashkey;
+    unsigned int  hash;
 
-    return hashkey;
+    return hash;
 }
 
-hashtable_t *hashtable_create(hashtable_t *hashtable, int bucket_num, int bucket_size)
+hashtable_t *hashtable_create(int bulksize, int eltsize)
 {
-	hashtable_t *hashtable = malloc(sizeof(hashtable_t));
-    hashtable->number = bucket_num;
-    hashtable->bucketsize = bucket_size + sizeof(hashnode_t);
-    hashtable->incr = 10;
-    hashtable->memory = calloc(bucket_num, hashtable->bucketsize);
-    hashtable->buckets = calloc(bucket_num, sizeof(hashnode_t *));
-
-    return 0;
+	hashtable_t *hashtbl = t_malloc(sizeof(hashtable_t));
+	if(!hashtable)
+		return ptr_null;
+	
+	hashtbl->bulks = t_calloc(bulksize, sizeof(hashnode_t *));
+    return hashtbl;
 }
 
 int hashtable_destroy(hashtable_t *hashtable)
 {
-
+	
 }
 
 int hashtable_clean(hashtable_t *hashtable)
@@ -31,16 +29,15 @@ int hashtable_clean(hashtable_t *hashtable)
     
 }
 
-static hashnode_t *hashnode_create(char *key, char *value)
+static hashnode_t *hashnode_create(char *key, void *value)
 {
-	hashnode_t *node = malloc(sizeof(hashnode_t));
-	memcpy(node->key, key, strlen(key));
-	node->value = value;
-	node->next = NULL;
+	hashnode_t	*bulk = t_malloc(sizeof(hashnode_t));
+	strncpy(bulk->key, key, 64);
+	bulk->value = t_memdup(value);
 	return node;
 }
 
-static int hashtable_add(hashtable_t *htable, char *key, void *val, int size)
+static int hashtbl_add(hashtable_t *htable, char *key, void *val, int size)
 {
 	;
 }
@@ -59,7 +56,5 @@ int hashtable_delete(hashnode_t *htable, char *key)
 {
 	return 0;
 }
-
-
 
 
