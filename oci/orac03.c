@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "oci.h"
+#include "util.h"
 
 /* 环境句柄, 所有句柄的基础, 指向一块内存区, 
  * 其他的句柄在该句柄的基础上进行别的句柄空间的分配和操作 */
@@ -12,8 +13,8 @@ static OCIAuthInfo	*auth = NULL;
 static OCISPool		*spool = NULL; /* 会话池 */	
 static OCICPool		*cpool = NULL; /* 连接池 */
 
-char	username[] = "scott";	 /* 用户名 */
-char	password[] = "tiger";	 /* 用户密码 */
+char	username[] = "zwj";	 /* 用户名 */
+char	password[] = "zwj2017";	 /* 用户密码 */
 char	connstr[] = "";			 /* 服务名称: 192.168.1.46/orcl */
 
 char	*poolName = NULL;
@@ -31,7 +32,7 @@ int HandleSQL()
 	ret = OCIHandleAlloc(env, (dvoid **)&error, OCI_HTYPE_ERROR, 0, (void **)NULL);
 	if(ret != OCI_SUCCESS)
 	{
-		printf("OCIHandleAlloc OCI_HTYPE_ERROR error: %d\n", ret);
+		error("OCIHandleAlloc OCI_HTYPE_ERROR error: %d", ret);
 		goto HandleSQL_end;	
 	}
 
@@ -59,10 +60,13 @@ int HandleSQL()
 		}
 
 		/* 开始SQL语句操作 */
+#if 0
 		query_fetch_by_one(context, error);
 
 		query_fetch_by_multi(context, error);
-
+#endif
+		call_procedure(context, error);
+	
 		OCISessionRelease(context, error, NULL, 0, OCI_DEFAULT);
 	}
 
@@ -129,7 +133,7 @@ int SessionPoolCreate(OCIError *error)
     ret = OCIHandleAlloc(env, (dvoid **)&spool, OCI_HTYPE_SPOOL, 0, (void **)NULL);
     if(ret != OCI_SUCCESS)
     {
-        printf("OCIHandleAlloc OCI_HTYPE_SPOOL fail\n");
+        error("OCIHandleAlloc OCI_HTYPE_SPOOL fail");
         return -1;
     }
 
@@ -265,7 +269,7 @@ int main()
 	}
 
 	/* 开始处理SQL语句 */
-	HandleSQL2();	
+	HandleSQL();	
 
 	/* 销毁会话池 */
 	OCISessionPoolDestroy(spool, error, OCI_DEFAULT);

@@ -6,7 +6,7 @@ LIB_PATH=$(ORACLE_HOME)/lib
 RM=rm -f
 LIB_LINK=$(LIB_PATH) -lclntsh
 
-SQL_OBJ=query.o
+SQL_OBJ=query.o procedure.o
 
 TARGET=orac01 orac02 orac03
 
