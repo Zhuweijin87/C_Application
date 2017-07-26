@@ -34,6 +34,8 @@ int insert_values(OCISvcCtx *context, OCIError *error)
 	OCIBind     *bind4 = NULL;
 	OCIBind     *bind5 = NULL;
 
+	OCIBindByPos(stmt, &bind1, error, 1, (void *)userId, sizeof(userId), SQLT_STR, NULL, NULL, NULL, 0, NULL, OCI_DEFAULT);
+	OCIBindByPos(stmt, &bind1, error, 2, (void *)userName, sizeof(userName), SQLT_STR, NULL, NULL, NULL, 0, NULL, OCI_DEFAULT);	
 	
 	return 0;
 }
