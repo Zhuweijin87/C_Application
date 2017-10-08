@@ -10,3 +10,5 @@ C 语言实用例子与笔记
 C++ 模型: http://www.cnblogs.com/wanggary/category/294620.html <br>
 
 Linux 零拷贝：http://blog.duomila.club/#/blog/AAQAAACpV8U=
+
+阮一峰 ： http://www.ruanyifeng.com/blog/
